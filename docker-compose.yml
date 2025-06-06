@@ -2,19 +2,10 @@ version: "3.8"
 
 services:
   coqui-tts:
-    image: ghcr.io/coqui-ai/tts-cpu:latest
+    image: sepia/coqui-tts:aarch64  # Färdig ARM64‐bild som innehåller Coqui TTS 0.12.x
     container_name: coqui-tts
     ports:
-      - "5000:5002"       # Mappa host:5000 → container:5002
-    command: >
-      tts-server
-      --model_name tts_models/sv/cv/vits
-      --host 0.0.0.0
-      --port 5002
-    volumes:
-      - coqui_data:/root/.cache/tts   # Sparar nedladdad modell-cache
+      - "5000:80"                   # Mappa host-port 5000 → containerns port 80
+    environment:
+      - TTS_MODEL=tts_models/sv/cv/vits
     restart: unless-stopped
-
-volumes:
-  coqui_data:
-    driver: local
