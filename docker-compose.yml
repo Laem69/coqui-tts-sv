@@ -2,16 +2,17 @@ version: "3.8"
 
 services:
   coqui-tts:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/coqui-ai/tts-cpu:latest
     container_name: coqui-tts
     ports:
-      - "5000:5002"            # Mappa host-port 5000 → container-port 5002
-    environment:
-      - MODEL_NAME=tts_models/sv/cv/vits
+      - "5000:5002"       # Mappa host:5000 → container:5002
+    command: >
+      tts-server
+      --model_name tts_models/sv/cv/vits
+      --host 0.0.0.0
+      --port 5002
     volumes:
-      - coqui_data:/root/.cache/tts   # Volym för att spara nedladdade TTS-modeller
+      - coqui_data:/root/.cache/tts   # Sparar nedladdad modell-cache
     restart: unless-stopped
 
 volumes:
