@@ -7,11 +7,11 @@ services:
       dockerfile: Dockerfile
     container_name: coqui-tts
     ports:
-      - "5000:5002"        # Host-port 5000 → containerns port 5002
+      - "5000:5002"           # Mappa host 5000 → container 5002 (tts-server lyssnar där)
     environment:
       - MODEL_NAME=tts_models/sv/cv/vits
     volumes:
-      - coqui_data:/root/.cache/tts   # Cache för Coqui-modeller
+      - coqui_data:/root/.cache/tts   # Cache för nedladdade Coqui-modeller
     restart: unless-stopped
 
 volumes:
