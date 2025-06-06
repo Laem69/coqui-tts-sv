@@ -1,18 +1,22 @@
 # ---------- Dockerfile ----------
+#
+# 1) Välj Ubuntu 22.04 ARM64 (Raspberry Pi 5-kompatibel)
 FROM arm64v8/ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1) Installera system- och utvecklingspaket
+# 2) Installera alla system- och utvecklingspaket som TTS kan behöva
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+      # Grundläggande byggverktyg och Python-dev
       build-essential \
       cmake \
-      git \
-      wget \
       python3 \
       python3-pip \
       python3-venv \
       python3-dev \
+      git \
+      wget \
+      # Ljudbibliotek (libsndfile, PortAudio, ALSA, JACK, PulseAudio)
       libsndfile1 \
       libsndfile1-dev \
       ffmpeg \
@@ -23,14 +27,18 @@ RUN apt-get update && \
       portaudio19-dev \
       libportaudio2 \
       libpulse-dev \
-      libssl-dev \
-      libffi-dev \
+      # Matematisk acceleration (BLAS/LAPACK) 
       libblas-dev \
       liblapack-dev \
       libatlas-base-dev \
+      # SSL/FFI för vissa Python-paket
+      libssl-dev \
+      libffi-dev \
+      # Bildbibliotek (i fall TTS eller dess beroenden behöver dem)
       libjpeg-dev \
       libpng-dev \
       libfreetype6-dev \
+      # XML/kompression/SQLite etc. för bredast Python-stöd
       libxml2-dev \
       libxslt1-dev \
       zlib1g-dev \
@@ -44,22 +52,25 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# 2) Uppgradera pip, setuptools och wheel
+# 3) Uppgradera pip, setuptools och wheel
 RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
 
-# 3) Installera Torch för ARM64 (CPU-only) från PyTorchs aarch64-index
+# 4) För-installera NumPy och Cython, så att TTS:s C-extensioner kan kompileras
+RUN pip3 install --no-cache-dir numpy Cython
+
+# 5) Installera PyTorch (CPU-only) för ARM64 via PyTorchs officiella index
 RUN pip3 install --no-cache-dir torch --extra-index-url https://download.pytorch.org/whl/torch_stable.html
 
-# 4) Installera Coqui TTS 0.12.3 + Flask + Flask-CORS
+# 6) Slutligen: Installera Coqui TTS 0.12.3 + Flask + Flask-CORS 
 RUN pip3 install --no-cache-dir TTS==0.12.3 flask flask-cors
 
-# 5) Kopiera in startskript och gör det körbart
+# 7) Kopiera in startskriptet och gör det körbart
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# 6) Exponera port 5002 (tts-servern)
+# 8) Exponera TTS-serverns port
 EXPOSE 5002
 
-# 7) Kör start.sh vid containerns start
+# 9) Kör start.sh när containern startar
 CMD ["/app/start.sh"]
 # ---------- Slut på Dockerfile ----------
