@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  coqui-tts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coqui-tts
+    ports:
+      - "5000:5002"        # Host-port 5000 → containerns port 5002
+    environment:
+      - MODEL_NAME=tts_models/sv/cv/vits
+    volumes:
+      - coqui_data:/root/.cache/tts   # Cache för Coqui-modeller
+    restart: unless-stopped
+
+volumes:
+  coqui_data:
+    driver: local
