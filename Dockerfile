@@ -1,9 +1,8 @@
 # ---------- Dockerfile ----------
 FROM arm64v8/ubuntu:22.04
-
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1) Installera systemberoenden inklusive libsndfile1 och verktyg för att hämta Python-hjul
+# 1) Installera systemberoenden
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       python3 \
@@ -17,23 +16,22 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# 2) Uppgradera pip (valfritt men rekommenderat för senaste wheel-stöd)
-RUN pip3 install --no-cache-dir --upgrade pip setuptools
+# 2) Uppgradera pip så att vi kan hämta hjul
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel :contentReference[oaicite:3]{index=3}
 
-# 3) Installera en Torch-wheel som är byggd för ARM64 (CPU-only). 
-#    Vi använder PyTorch-sajtens aarch64-index för CPU-hjul:
-RUN pip3 install --no-cache-dir torch --extra-index-url https://download.pytorch.org/whl/torch_stable.html
+# 3) Installera en Torch-wheel byggd för ARM64 (CPU-only)
+RUN pip3 install --no-cache-dir torch --extra-index-url https://download.pytorch.org/whl/torch_stable.html :contentReference[oaicite:4]{index=4}
 
-# 4) Installera Coqui TTS + Flask + flask-cors
-RUN pip3 install --no-cache-dir TTS==0.12.3 flask flask-cors
+# 4) Installera Coqui TTS + Flask + Flask-CORS
+RUN pip3 install --no-cache-dir TTS==0.12.3 flask flask-cors :contentReference[oaicite:5]{index=5}
 
-# 5) Kopiera in startskriptet (start.sh) och gör det exekverbart
+# 5) Kopiera och gör 'start.sh' exekverbar
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# 6) Exponera den port som tts-server kommer att lyssna på
+# 6) Utgå från port 5002 (tts-server)
 EXPOSE 5002
 
-# 7) Starta start.sh när containern körs
+# 7) När containern körs, starta start.sh
 CMD ["/app/start.sh"]
 # ---------- Slut på Dockerfile ----------
